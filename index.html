@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prank Safe</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="phone-shell">
+      <div class="notch"></div>
+
+      <header class="topbar">
+        <span class="time">9:41</span>
+        <div class="top-icons">
+          <span>◔◔◔</span>
+          <span>📶</span>
+          <span>▣</span>
+        </div>
+      </header>
+
+      <div class="app-head">
+        <div>
+          <p class="eyebrow">Safe prank</p>
+          <h1>Prank Safe</h1>
+        </div>
+        <button class="icon-btn" aria-label="Options">✦</button>
+      </div>
+
+      <section class="hero-card">
+        <div class="hero-row">
+          <span>Mode</span>
+          <span class="pill pill-green">Live</span>
+        </div>
+        <div class="hero-stats">
+          <strong id="score">12</strong>
+          <span>points</span>
+        </div>
+      </section>
+
+      <nav class="tab-nav" aria-label="Navigation">
+        <button class="tab active">Home</button>
+        <button class="tab">Alerts</button>
+        <button class="tab">Jokes</button>
+        <button class="tab">Sounds</button>
+      </nav>
+
+      <main class="content">
+        <section class="grid-actions">
+          <button class="action-card primary" data-action="notification">
+            <span class="emoji">📢</span>
+            <strong>Notification</strong>
+            <small>Faux alerte</small>
+          </button>
+          <button class="action-card purple" data-action="crash">
+            <span class="emoji">💥</span>
+            <strong>Crash</strong>
+            <small>Écran système</small>
+          </button>
+          <button class="action-card green" data-action="joke">
+            <span class="emoji">😂</span>
+            <strong>Blague</strong>
+            <small>Random</small>
+          </button>
+          <button class="action-card orange" data-action="sound">
+            <span class="emoji">🔊</span>
+            <strong>Sound</strong>
+            <small>Effet drôle</small>
+          </button>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Dernières alertes</h2>
+            <button class="mini-btn" id="add-alert">+ add</button>
+          </div>
+          <div id="notification-list" class="notification-list" aria-live="polite"></div>
+        </section>
+
+        <section class="panel sound-panel">
+          <div class="panel-head">
+            <h2>Soundboard</h2>
+          </div>
+          <div class="sound-grid">
+            <button class="sound-btn" data-tone="beep">Beep</button>
+            <button class="sound-btn" data-tone="error">Error</button>
+            <button class="sound-btn" data-tone="ping">Ping</button>
+            <button class="sound-btn" data-tone="laugh">Laugh</button>
+            <button class="sound-btn" data-tone="win">Win</button>
+            <button class="sound-btn" data-tone="drop">Drop</button>
+          </div>
+        </section>
+      </main>
+
+      <div class="toast" id="toast">✅ Prank safe activé</div>
+
+      <div class="overlay" id="overlay" aria-hidden="true">
+        <div class="modal">
+          <div class="modal-top">
+            <span>Notification système</span>
+            <span>⚠️</span>
+          </div>
+          <div class="modal-icon">📱</div>
+          <h3>Suspicious activity</h3>
+          <p>Une activité anormale a été détectée. Le mode “prank safe” est actif et tout est sous contrôle.</p>
+          <div class="modal-actions">
+            <button class="ghost-btn" id="close-overlay">Fermer</button>
+            <button class="primary-btn" id="confirm-overlay">OK</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="fake-screen" id="fake-screen" aria-hidden="true">
+        <div class="screen-header">
+          <span>System Update</span>
+          <span>🔧</span>
+        </div>
+
+        <div class="error-box">
+          <div class="big-emoji">💥</div>
+          <h3>Critical Error</h3>
+          <p>Le système a détecté un mode “fou rires”. <br />Toute la machine fonctionne toujours normalement.</p>
+        </div>
+
+        <div class="loading">
+          <span class="spinner"></span>
+          <span>Repairing...</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
