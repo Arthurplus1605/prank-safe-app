@@ -2,425 +2,249 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Prank Safe" />
-    <meta name="theme-color" content="#0a0e1a" />
-    <meta name="description" content="La meilleure app de pranks et d'alertes amusantes pour troller vos amis en toute sécurité !" />
-    
-    <title>Prank Safe - App de Pranks & Alertes Amusantes</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b5cf6' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🛡️</text></svg>" />
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prank Safe Pro</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- Status Bar Simulator -->
-    <div class="status-bar-simulator"></div>
-
     <div class="phone-shell">
       <div class="notch"></div>
 
       <header class="topbar">
-        <span class="time" id="time">9:41</span>
+        <span class="time">9:41</span>
         <div class="top-icons">
-          <span class="signal">◔◔◔</span>
-          <span class="wifi">📶</span>
-          <span class="battery">▣</span>
+          <span>◔◔◔</span>
+          <span>📶</span>
+          <span>▣</span>
         </div>
       </header>
 
       <div class="app-head">
         <div>
-          <p class="eyebrow">🛡️ Protection Active</p>
-          <h1>Prank Safe</h1>
+          <p class="eyebrow">Safe prank</p>
+          <h1>Prank Safe Pro</h1>
         </div>
-        <button class="icon-btn settings-btn" aria-label="Paramètres">⚙️</button>
+        <button class="icon-btn" aria-label="Options">✦</button>
       </div>
 
       <section class="hero-card">
         <div class="hero-row">
-          <span>STATUT</span>
-          <span class="pill pill-green">● ACTIF</span>
+          <span>Mode</span>
+          <span class="pill pill-green">🛡️ Actif</span>
         </div>
         <div class="hero-stats">
-          <div>
-            <strong id="score">0</strong>
-            <span>points</span>
-          </div>
-          <div class="hero-level">
-            <span class="level-badge">Lvl</span>
-            <strong id="level">1</strong>
-          </div>
+          <strong id="score">12</strong>
+          <span>points</span>
+        </div>
+        <div class="hero-row" style="margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
+          <span>Menaces détectées</span>
+          <span class="threat-count" id="threat-count">0</span>
         </div>
       </section>
 
       <nav class="tab-nav" aria-label="Navigation">
-        <button class="tab active" data-tab="home">🎮 Jeux</button>
-        <button class="tab" data-tab="alerts">🚨 Alertes</button>
-        <button class="tab" data-tab="sounds">🔊 Sons</button>
-        <button class="tab" data-tab="stats">📊 Stats</button>
+        <button class="tab active" data-tab="home">Accueil</button>
+        <button class="tab" data-tab="scanner">Scanner</button>
+        <button class="tab" data-tab="journal">Journal</button>
+        <button class="tab" data-tab="prankbox">Blagues</button>
       </nav>
 
       <main class="content">
-        <!-- ========== HOME TAB: GAMES ========== -->
-        <div class="tab-content active" id="home">
-          <section class="featured-banner">
-            <div class="banner-content">
-              <span class="banner-emoji">⭐</span>
-              <h2>Prank Master Mode</h2>
-              <p>Devenez expert en pranks !</p>
-            </div>
-          </section>
-
+        <!-- HOME TAB -->
+        <div class="tab-content active" id="home-tab">
           <section class="grid-actions">
-            <button class="action-card primary glow-effect tap-ripple" data-action="notification">
+            <button class="action-card primary" data-action="notification">
               <span class="emoji">📢</span>
               <strong>Notification</strong>
-              <small>Fausse alerte</small>
-              <span class="points-badge">+5</span>
+              <small>Faux alerte</small>
             </button>
-            <button class="action-card purple glow-effect tap-ripple" data-action="crash">
+            <button class="action-card purple" data-action="crash">
               <span class="emoji">💥</span>
-              <strong>Crash Screen</strong>
+              <strong>Crash</strong>
               <small>Écran système</small>
-              <span class="points-badge">+3</span>
             </button>
-            <button class="action-card green glow-effect tap-ripple" data-action="joke">
+            <button class="action-card green" data-action="joke">
               <span class="emoji">😂</span>
-              <strong>Blagues</strong>
-              <small>Humour aléatoire</small>
-              <span class="points-badge">+7</span>
+              <strong>Blague</strong>
+              <small>Random</small>
             </button>
-            <button class="action-card orange glow-effect tap-ripple" data-action="sound">
+            <button class="action-card orange" data-action="sound">
               <span class="emoji">🔊</span>
-              <strong>Alarm</strong>
-              <small>Sons d'alerte</small>
-              <span class="points-badge">+2</span>
+              <strong>Son</strong>
+              <small>Effet drôle</small>
             </button>
           </section>
 
-          <section class="panel quick-actions-panel">
-            <div class="panel-head">
-              <h2>🎯 Raccourcis rapides</h2>
-            </div>
-            <div class="quick-actions">
-              <button class="quick-btn tap-ripple" data-preset="security">🔒 Sécurité</button>
-              <button class="quick-btn tap-ripple" data-preset="battery">🔋 Batterie</button>
-              <button class="quick-btn tap-ripple" data-preset="network">📡 Réseau</button>
-              <button class="quick-btn tap-ripple" data-preset="update">⬇️ Update</button>
-              <button class="quick-btn tap-ripple" data-preset="storage">💾 Stockage</button>
-              <button class="quick-btn tap-ripple" data-preset="bluetooth">🔵 BLE</button>
-            </div>
-          </section>
-
-          <section class="panel leaderboard-panel">
-            <div class="panel-head">
-              <h2>🏆 Top Prankers</h2>
-            </div>
-            <div class="leaderboard">
-              <div class="leaderboard-item rank-1">
-                <span class="rank">🥇</span>
-                <span class="name">Vous</span>
-                <span class="score" id="lb-score-1">0</span>
-              </div>
-              <div class="leaderboard-item rank-2">
-                <span class="rank">🥈</span>
-                <span class="name">Ami 1</span>
-                <span class="score">250</span>
-              </div>
-              <div class="leaderboard-item rank-3">
-                <span class="rank">🥉</span>
-                <span class="name">Ami 2</span>
-                <span class="score">180</span>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <!-- ========== ALERTS TAB ========== -->
-        <div class="tab-content" id="alerts">
           <section class="panel">
             <div class="panel-head">
-              <h2>⭐ Alertes créées</h2>
-              <button class="mini-btn tap-ripple" id="add-alert">+ Créer</button>
+              <h2>Dernières alertes</h2>
+              <button class="mini-btn" id="add-alert">+ add</button>
             </div>
-            <div id="notification-list" class="notification-list" aria-live="polite">
-              <div class="empty-state">
-                <span class="empty-emoji">📭</span>
-                <p>Aucune alerte créée</p>
-              </div>
-            </div>
+            <div id="notification-list" class="notification-list" aria-live="polite"></div>
           </section>
 
-          <section class="panel">
-            <div class="panel-head">
-              <h2>📜 Historique</h2>
-            </div>
-            <div class="history-list" id="history-list">
-              <div class="empty-state">
-                <span class="empty-emoji">📭</span>
-                <p>L'historique apparaît ici</p>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel alert-presets">
-            <div class="panel-subhead">
-              <h3>📋 Alertes prédéfinies</h3>
-            </div>
-            <div class="presets-grid">
-              <button class="preset-option tap-ripple" data-msg="Mise à jour système disponible">
-                <span>⬇️</span>
-                <span>Mise à jour</span>
-              </button>
-              <button class="preset-option tap-ripple" data-msg="Batterie faible !">
-                <span>🔋</span>
-                <span>Batterie</span>
-              </button>
-              <button class="preset-option tap-ripple" data-msg="Connexion réseau instable">
-                <span>📡</span>
-                <span>Réseau</span>
-              </button>
-              <button class="preset-option tap-ripple" data-msg="Alerte de sécurité détectée">
-                <span>🔒</span>
-                <span>Sécurité</span>
-              </button>
-              <button class="preset-option tap-ripple" data-msg="Stockage presque plein">
-                <span>💾</span>
-                <span>Stockage</span>
-              </button>
-              <button class="preset-option tap-ripple" data-msg="Appel manqué de Maman">
-                <span>☎️</span>
-                <span>Appel</span>
-              </button>
-            </div>
-          </section>
-        </div>
-
-        <!-- ========== SOUNDS TAB ========== -->
-        <div class="tab-content" id="sounds">
           <section class="panel sound-panel">
             <div class="panel-head">
-              <h2>🎵 Soundboard</h2>
-              <div class="volume-control">
-                <button class="volume-btn tap-ripple" id="volume-down" aria-label="Diminuer le volume">−</button>
-                <span class="volume-level" id="volume-display">100%</span>
-                <button class="volume-btn tap-ripple" id="volume-up" aria-label="Augmenter le volume">+</button>
-              </div>
+              <h2>Soundboard</h2>
             </div>
             <div class="sound-grid">
-              <button class="sound-btn tap-ripple" data-tone="beep">🎵 Beep</button>
-              <button class="sound-btn tap-ripple" data-tone="error">⚠️ Error</button>
-              <button class="sound-btn tap-ripple" data-tone="ping">📳 Ping</button>
-              <button class="sound-btn tap-ripple" data-tone="laugh">😄 Rire</button>
-              <button class="sound-btn tap-ripple" data-tone="win">✅ Win</button>
-              <button class="sound-btn tap-ripple" data-tone="drop">⬇️ Drop</button>
+              <button class="sound-btn" data-tone="beep">Beep</button>
+              <button class="sound-btn" data-tone="error">Error</button>
+              <button class="sound-btn" data-tone="ping">Ping</button>
+              <button class="sound-btn" data-tone="laugh">Laugh</button>
+              <button class="sound-btn" data-tone="win">Win</button>
+              <button class="sound-btn" data-tone="drop">Drop</button>
             </div>
           </section>
+        </div>
 
-          <section class="panel sound-panel">
-            <div class="panel-subhead">
-              <h3>🎼 Séquences Premium</h3>
+        <!-- SCANNER TAB -->
+        <div class="tab-content" id="scanner-tab">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>🔍 Scanner Antivirus</h2>
             </div>
-            <div class="sound-presets">
-              <button class="preset-btn tap-ripple" data-preset="alert-sequence">🚨 Alerte</button>
-              <button class="preset-btn tap-ripple" data-preset="success-sequence">✅ Succès</button>
-              <button class="preset-btn tap-ripple" data-preset="error-sequence">❌ Erreur</button>
-              <button class="preset-btn tap-ripple" data-preset="notification-sequence">💬 Chat</button>
+            <div class="scanner-controls">
+              <button class="primary-btn" id="start-scan">▶️ Démarrer Scan</button>
+              <button class="ghost-btn" id="quick-scan">⚡ Scan Rapide</button>
+              <button class="ghost-btn" id="deep-scan">🔬 Scan Approfondi</button>
             </div>
+            <div id="scan-progress" class="scan-progress" style="display:none;">
+              <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+              </div>
+              <span id="scan-status" class="scan-status">Initialisation...</span>
+            </div>
+            <div id="scan-results" class="scan-results"></div>
           </section>
 
           <section class="panel">
             <div class="panel-head">
-              <h2>😂 Blagues aléatoires</h2>
-              <button class="mini-btn tap-ripple" id="random-joke">🎲 Nouvelle</button>
+              <h2>📁 Télécharger des fichiers</h2>
             </div>
-            <div id="jokes-container" class="jokes-list">
-              <div class="joke-item">
-                <p class="joke-text">Pourquoi les développeurs aiment les montagne russes ? Parce qu'ils adorent les boucles ! 🎢</p>
-                <button class="joke-copy-btn tap-ripple">📋 Copier</button>
+            <div class="file-upload-area" id="file-upload-area">
+              <span>📤 Cliquez ou glissez des fichiers ici</span>
+              <input type="file" id="file-input" multiple style="display: none;">
+            </div>
+            <div id="uploaded-files" class="uploaded-files"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>🎯 Menaces par Catégorie</h2>
+            </div>
+            <div id="threat-categories" class="threat-categories">
+              <div class="category-item">
+                <span>🦠 Malware</span>
+                <span class="threat-badge" data-category="malware">0</span>
+              </div>
+              <div class="category-item">
+                <span>🔓 Spyware</span>
+                <span class="threat-badge" data-category="spyware">0</span>
+              </div>
+              <div class="category-item">
+                <span>⚠️ PUP</span>
+                <span class="threat-badge" data-category="pup">0</span>
+              </div>
+              <div class="category-item">
+                <span>🚫 Trojan</span>
+                <span class="threat-badge" data-category="trojan">0</span>
               </div>
             </div>
           </section>
         </div>
 
-        <!-- ========== STATS TAB ========== -->
-        <div class="tab-content" id="stats">
-          <section class="panel stats-panel">
+        <!-- JOURNAL TAB -->
+        <div class="tab-content" id="journal-tab">
+          <section class="panel">
             <div class="panel-head">
-              <h2>📊 Tableau de bord</h2>
+              <h2>📋 Journal d'Événements</h2>
+              <button class="mini-btn" id="clear-journal">🗑️ Effacer</button>
             </div>
-            <div class="stats-grid">
-              <div class="stat-card tap-ripple">
-                <span class="stat-icon">🎯</span>
-                <span class="stat-value" id="stat-actions">0</span>
-                <span class="stat-label">Actions</span>
-              </div>
-              <div class="stat-card tap-ripple">
-                <span class="stat-icon">🔊</span>
-                <span class="stat-value" id="stat-sounds">0</span>
-                <span class="stat-label">Sons</span>
-              </div>
-              <div class="stat-card tap-ripple">
-                <span class="stat-icon">⏱️</span>
-                <span class="stat-value" id="stat-time">0s</span>
-                <span class="stat-label">Durée</span>
-              </div>
-              <div class="stat-card tap-ripple">
-                <span class="stat-icon">😂</span>
-                <span class="stat-value" id="stat-laughs">0</span>
-                <span class="stat-label">Rires</span>
-              </div>
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-filter="all">Tous</button>
+              <button class="filter-btn" data-filter="scan">Scans</button>
+              <button class="filter-btn" data-filter="threat">Menaces</button>
+              <button class="filter-btn" data-filter="cleanup">Nettoyage</button>
+              <button class="filter-btn" data-filter="notification">Notif</button>
             </div>
+            <div id="event-log" class="event-log" aria-live="polite"></div>
           </section>
+        </div>
 
-          <section class="panel stats-panel">
+        <!-- PRANKBOX TAB -->
+        <div class="tab-content" id="prankbox-tab">
+          <section class="panel">
             <div class="panel-head">
-              <h2>📈 Analyse détaillée</h2>
+              <h2>🎉 Boîte à Blagues</h2>
             </div>
-            <div class="stats-detailed">
-              <div class="stat-row">
-                <span>Alertes envoyées</span>
-                <strong id="detailed-alerts">0</strong>
-              </div>
-              <div class="stat-row">
-                <span>Mode prank activé</span>
-                <strong id="detailed-prank">0x</strong>
-              </div>
-              <div class="stat-row">
-                <span>Niveau de fun</span>
-                <strong id="detailed-fun">🙂</strong>
-              </div>
-              <div class="stat-row">
-                <span>Progression</span>
-                <strong id="detailed-progress">0%</strong>
-              </div>
-              <div class="stat-row">
-                <span>Ratio de rire/action</span>
-                <strong id="detailed-ratio">N/A</strong>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel danger-zone">
-            <div class="panel-head">
-              <h2>⚡ Outils avancés</h2>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button class="reset-btn tap-ripple" id="reset-stats">🔄 Réinitialiser</button>
-              <button class="export-btn tap-ripple" id="export-stats">📤 Exporter</button>
+            <div class="prank-grid">
+              <button class="prank-btn" data-prank="notification">
+                <span>📢</span>
+                <strong>Notification</strong>
+              </button>
+              <button class="prank-btn" data-prank="crash">
+                <span>💥</span>
+                <strong>Crash</strong>
+              </button>
+              <button class="prank-btn" data-prank="joke">
+                <span>😂</span>
+                <strong>Blague</strong>
+              </button>
+              <button class="prank-btn" data-prank="sound">
+                <span>🔊</span>
+                <strong>Son</strong>
+              </button>
             </div>
           </section>
         </div>
       </main>
 
-      <div class="toast" id="toast">✅ Système prêt</div>
+      <div class="toast" id="toast">✅ Prank safe activé</div>
 
-      <!-- ========== MAIN MODAL ========== -->
       <div class="overlay" id="overlay" aria-hidden="true">
         <div class="modal">
           <div class="modal-top">
-            <span>⚠️ Notification système</span>
-            <button class="close-modal-btn tap-ripple" aria-label="Fermer">✕</button>
+            <span>Notification système</span>
+            <span>⚠️</span>
           </div>
           <div class="modal-icon">📱</div>
-          <h3>Activité suspecte détectée</h3>
-          <p>Une activité anormale a été détectée sur le système. Le mode "Prank Safe" est actif et tout est sous contrôle total.</p>
+          <h3>Suspicious activity</h3>
+          <p>Une activité anormale a été détectée. Le mode "prank safe" est actif et tout est sous contrôle.</p>
           <div class="modal-actions">
-            <button class="ghost-btn tap-ripple" id="close-overlay">Rejeter</button>
-            <button class="primary-btn tap-ripple" id="confirm-overlay">Confirmer</button>
+            <button class="ghost-btn" id="close-overlay">Fermer</button>
+            <button class="primary-btn" id="confirm-overlay">OK</button>
           </div>
         </div>
       </div>
 
-      <!-- ========== JOKE MODAL ========== -->
-      <div class="overlay" id="joke-modal" aria-hidden="true">
-        <div class="modal joke-modal">
-          <div class="modal-top">
-            <span>😂 Blague du jour</span>
-            <button class="close-modal-btn tap-ripple" aria-label="Fermer">✕</button>
-          </div>
-          <div class="modal-icon">🤣</div>
-          <h3>Rigolo !</h3>
-          <p id="joke-content"></p>
-          <div class="modal-actions">
-            <button class="ghost-btn tap-ripple" id="close-joke">Fermer</button>
-            <button class="primary-btn tap-ripple" id="another-joke">Suivante !</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ========== CRASH SCREEN ========== -->
       <div class="fake-screen" id="fake-screen" aria-hidden="true">
         <div class="screen-header">
-          <span>🔧 System Update</span>
-          <span id="crash-percentage">0%</span>
+          <span>System Update</span>
+          <span>🔧</span>
         </div>
-
         <div class="error-box">
           <div class="big-emoji">💥</div>
-          <h3>FATAL ERROR</h3>
-          <p>Le système a détecté un mode "Fou Rires". <br />Tentative de réparation en cours...</p>
-          <div class="error-code">ERR_PRANK_SAFE_404 | CORES: 8/8</div>
+          <h3>Critical Error</h3>
+          <p>Le système a détecté un mode "fou rires". <br />Toute la machine fonctionne toujours normalement.</p>
         </div>
-
         <div class="loading">
           <span class="spinner"></span>
-          <span>Repairing system...</span>
-        </div>
-
-        <div class="progress-bar">
-          <div class="progress-fill" id="crash-progress"></div>
+          <span>Repairing...</span>
         </div>
       </div>
 
-      <!-- ========== SETTINGS MODAL ========== -->
-      <div class="overlay" id="settings-modal" aria-hidden="true">
-        <div class="modal settings-modal">
-          <div class="modal-top">
-            <span>⚙️ Paramètres</span>
-            <button class="close-modal-btn tap-ripple" aria-label="Fermer">✕</button>
-          </div>
-          <div class="settings-list">
-            <div class="setting-row">
-              <span>Sons activés</span>
-              <input type="checkbox" class="toggle-switch" id="sound-toggle" checked />
-            </div>
-            <div class="setting-row">
-              <span>Notifications visuelles</span>
-              <input type="checkbox" class="toggle-switch" id="notify-toggle" checked />
-            </div>
-            <div class="setting-row">
-              <span>Mode vibreur</span>
-              <input type="checkbox" class="toggle-switch" id="vibrate-toggle" />
-            </div>
-            <div class="setting-row">
-              <span>Partage activé</span>
-              <input type="checkbox" class="toggle-switch" id="share-toggle" checked />
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button class="ghost-btn tap-ripple" id="close-settings">Fermer</button>
-          </div>
+      <!-- NOTIFICATION PANEL -->
+      <div class="notification-panel" id="notification-panel">
+        <div class="notification-header">
+          <h3>🔔 Notifications de Sécurité</h3>
+          <button class="close-btn" id="close-notification-panel">✕</button>
         </div>
-      </div>
-
-      <!-- Share Button (Bottom Action) -->
-      <div class="bottom-action-bar">
-        <button class="share-btn tap-ripple" id="share-app" aria-label="Partager l'app">
-          <span>📤</span>
-          <span>Partager</span>
-        </button>
-        <button class="rate-btn tap-ripple" id="rate-app" aria-label="Noter l'app">
-          <span>⭐</span>
-          <span>Noter</span>
-        </button>
+        <div id="notification-messages" class="notification-messages"></div>
       </div>
     </div>
 
     <script src="app.js"></script>
+    <script src="antivirus.js"></script>
   </body>
 </html>
