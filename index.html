@@ -46,6 +46,7 @@
       </nav>
 
       <main class="content">
+        <!-- ========== MAIN ACTIONS GRID ========== -->
         <section class="grid-actions">
           <button class="action-card primary" data-action="notification">
             <span class="emoji">📢</span>
@@ -69,17 +70,51 @@
           </button>
         </section>
 
+        <!-- ========== NOTIFICATIONS SECTION ========== -->
         <section class="panel">
           <div class="panel-head">
             <h2>Dernières alertes</h2>
             <button class="mini-btn" id="add-alert">+ add</button>
           </div>
           <div id="notification-list" class="notification-list" aria-live="polite"></div>
+
+          <!-- Quick notification presets -->
+          <div class="quick-actions">
+            <button class="quick-btn" data-preset="security">🔒 Sécurité</button>
+            <button class="quick-btn" data-preset="battery">🔋 Batterie</button>
+            <button class="quick-btn" data-preset="network">📡 Réseau</button>
+            <button class="quick-btn" data-preset="update">⬇️ Update</button>
+          </div>
         </section>
 
+        <!-- ========== JOKES SECTION ========== -->
+        <section class="panel jokes-panel">
+          <div class="panel-head">
+            <h2>Plaisanteries</h2>
+            <button class="mini-btn" id="random-joke">🎲 Random</button>
+          </div>
+          <div id="jokes-container" class="jokes-list">
+            <div class="joke-item">
+              <p class="joke-text">Pourquoi les développeurs sortent toujours en groupe de 10 ? Parce que sans 10, ils ne sont que 9.</p>
+              <button class="joke-copy-btn">📋 Copier</button>
+            </div>
+            <div class="joke-item">
+              <p class="joke-text">Comment appelle-t-on un programmeur venant du Canada ? Un logiciel libre !</p>
+              <button class="joke-copy-btn">📋 Copier</button>
+            </div>
+            <div class="joke-item">
+              <p class="joke-text">Pourquoi les bases de données ne vont jamais au cinéma ? Parce qu'elles ont peur des requêtes !</p>
+              <button class="joke-copy-btn">📋 Copier</button>
+            </div>
+          </div>
+          <button class="load-more-btn" id="load-more-jokes">Voir plus de blagues</button>
+        </section>
+
+        <!-- ========== SOUNDBOARD SECTION ========== -->
         <section class="panel sound-panel">
           <div class="panel-head">
             <h2>Soundboard</h2>
+            <button class="mini-btn" id="volume-control">🔊 Vol</button>
           </div>
           <div class="sound-grid">
             <button class="sound-btn" data-tone="beep">Beep</button>
@@ -89,11 +124,63 @@
             <button class="sound-btn" data-tone="win">Win</button>
             <button class="sound-btn" data-tone="drop">Drop</button>
           </div>
+
+          <!-- Additional sound effects -->
+          <div class="panel-subhead">
+            <h3>Effets Système</h3>
+          </div>
+          <div class="sound-grid">
+            <button class="sound-btn" data-tone="notification">Notification</button>
+            <button class="sound-btn" data-tone="crash">Crash</button>
+            <button class="sound-btn" data-tone="joke">Joke</button>
+            <button class="sound-btn" data-tone="sound">Sound</button>
+          </div>
+
+          <!-- Sound presets -->
+          <div class="panel-subhead">
+            <h3>Séquences</h3>
+          </div>
+          <div class="sound-presets">
+            <button class="preset-btn" data-preset="alert-sequence">🚨 Alerte</button>
+            <button class="preset-btn" data-preset="success-sequence">✅ Succès</button>
+            <button class="preset-btn" data-preset="error-sequence">❌ Erreur</button>
+            <button class="preset-btn" data-preset="notification-sequence">💬 Chat</button>
+          </div>
+        </section>
+
+        <!-- ========== STATS SECTION ========== -->
+        <section class="panel stats-panel">
+          <div class="panel-head">
+            <h2>Statistiques</h2>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-icon">🎯</span>
+              <span class="stat-value" id="stat-actions">0</span>
+              <span class="stat-label">Actions</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">🔊</span>
+              <span class="stat-value" id="stat-sounds">0</span>
+              <span class="stat-label">Sons joués</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">⏱️</span>
+              <span class="stat-value" id="stat-time">0s</span>
+              <span class="stat-label">Temps</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">😂</span>
+              <span class="stat-value" id="stat-laughs">0</span>
+              <span class="stat-label">Rires</span>
+            </div>
+          </div>
         </section>
       </main>
 
       <div class="toast" id="toast">✅ Prank safe activé</div>
 
+      <!-- ========== MAIN MODAL ========== -->
       <div class="overlay" id="overlay" aria-hidden="true">
         <div class="modal">
           <div class="modal-top">
@@ -102,7 +189,7 @@
           </div>
           <div class="modal-icon">📱</div>
           <h3>Suspicious activity</h3>
-          <p>Une activité anormale a été détectée. Le mode “prank safe” est actif et tout est sous contrôle.</p>
+          <p>Une activité anormale a été détectée. Le mode "prank safe" est actif et tout est sous contrôle.</p>
           <div class="modal-actions">
             <button class="ghost-btn" id="close-overlay">Fermer</button>
             <button class="primary-btn" id="confirm-overlay">OK</button>
@@ -110,6 +197,7 @@
         </div>
       </div>
 
+      <!-- ========== FAKE CRASH SCREEN ========== -->
       <div class="fake-screen" id="fake-screen" aria-hidden="true">
         <div class="screen-header">
           <span>System Update</span>
@@ -119,12 +207,66 @@
         <div class="error-box">
           <div class="big-emoji">💥</div>
           <h3>Critical Error</h3>
-          <p>Le système a détecté un mode “fou rires”. <br />Toute la machine fonctionne toujours normalement.</p>
+          <p>Le système a détecté un mode "fou rires". <br />Toute la machine fonctionne toujours normalement.</p>
+          <div class="error-code">CODE: ERR_PRANK_SAFE_404</div>
         </div>
 
         <div class="loading">
           <span class="spinner"></span>
           <span>Repairing...</span>
+        </div>
+      </div>
+
+      <!-- ========== JOKE MODAL ========== -->
+      <div class="overlay" id="joke-modal" aria-hidden="true">
+        <div class="modal joke-modal">
+          <div class="modal-top">
+            <span>Blague du jour</span>
+            <span>😂</span>
+          </div>
+          <div class="modal-icon">🤣</div>
+          <h3 id="joke-title">Voici ta blague !</h3>
+          <p id="joke-content"></p>
+          <div class="modal-actions">
+            <button class="ghost-btn" id="close-joke">Fermer</button>
+            <button class="primary-btn" id="another-joke">Une autre !</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== STATS MODAL ========== -->
+      <div class="overlay" id="stats-modal" aria-hidden="true">
+        <div class="modal stats-modal">
+          <div class="modal-top">
+            <span>Statistiques Complètes</span>
+            <span>📊</span>
+          </div>
+          <div class="stats-detailed">
+            <div class="stat-row">
+              <span>Actions totales</span>
+              <strong id="detailed-actions">0</strong>
+            </div>
+            <div class="stat-row">
+              <span>Sons joués</span>
+              <strong id="detailed-sounds">0</strong>
+            </div>
+            <div class="stat-row">
+              <span>Alertes envoyées</span>
+              <strong id="detailed-alerts">0</strong>
+            </div>
+            <div class="stat-row">
+              <span>Temps de session</span>
+              <strong id="detailed-time">0s</strong>
+            </div>
+            <div class="stat-row">
+              <span>Niveau de fun</span>
+              <strong id="detailed-fun">🎉</strong>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="ghost-btn" id="close-stats">Fermer</button>
+            <button class="primary-btn" id="reset-stats">Réinitialiser</button>
+          </div>
         </div>
       </div>
     </div>
