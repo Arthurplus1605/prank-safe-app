@@ -1,34 +1,35 @@
 // ============================================================
 // PRANK SAFE — ULTRA PREMIUM EDITION
-// Sons réalistes, crash system, audio externes, effets précis
 // ============================================================
 
-const AUDIO_FILES = {
-  beep: "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
-  ping: "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
-  error: "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
-  laugh: "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
-  win: "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
-  drop: "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
-  crash: "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
-  notification: "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA=="
+const state = {
+  actions: 0,
+  sounds: 0,
+  laughs: 0,
+  alerts: 0,
+  volume: 1,
+  sessionStart: Date.now(),
+  jokePool: [
+    "Pourquoi les développeurs adorent les montagne russes ? Parce qu'ils aiment les boucles !",
+    "Pourquoi les bases de données ne vont jamais au cinéma ? Parce qu'elles ont peur des requêtes !",
+    "Que dit un programmeur quand il va au supermarché ? Je veux du code, du café et des cookies !",
+    "Pourquoi les tests automatisés aiment-ils les vacances ? Parce qu'ils peuvent enfin se reposer !",
+    "Comment appelle-t-on un développeur en vacances ? Un full stack relax !",
+    "Pourquoi les bugs font-ils peur ? Parce qu'ils arrivent toujours au mauvais moment !",
+    "Pourquoi les ordinateurs sont si calmes ? Parce qu'ils gardent toujours leur cool !",
+    "Qu'est-ce qu'un pirate devenu développeur ? Un codeur avec un grand 'Arrr!'.",
+    "Pourquoi les interfaces mobiles sont cool ? Parce qu'elles sont toujours à l'écoute !",
+    "Qu'est-ce qu'un bug de nuit ? Une histoire qui se passe après minuit."
+  ]
 };
 
 let audioContext = null;
-let audioCache = {};
 let lastSoundTime = 0;
-
-// ============================================================
-// AUDIO CONTEXT MANAGEMENT
-// ============================================================
 
 function ensureAudioContext() {
   if (!audioContext) {
     const AudioCtor = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtor) {
-      console.warn("Web Audio API not supported");
-      return null;
-    }
+    if (!AudioCtor) return null;
     audioContext = new AudioCtor();
   }
   return audioContext;
@@ -37,14 +38,8 @@ function ensureAudioContext() {
 function unlockAudio() {
   const ctx = ensureAudioContext();
   if (!ctx) return;
-  if (ctx.state === "suspended") {
-    ctx.resume().catch(() => {});
-  }
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
 }
-
-// ============================================================
-// TONE SYNTHESIS (FALLBACK)
-// ============================================================
 
 function createOscillator({
   frequency = 440,
@@ -68,15 +63,12 @@ function createOscillator({
   oscillator.frequency.setValueAtTime(frequency, now);
 
   if (sweep !== 0) {
-    oscillator.frequency.linearRampToValueAtTime(
-      frequency + sweep,
-      now + duration / 1000
-    );
+    oscillator.frequency.linearRampToValueAtTime(frequency + sweep, now + duration / 1000);
   }
 
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(volume, now + attack);
-  gain.gain.linearRampToValueAtTime(0, now + duration / 1000);
+  gain.gain.linearRampToValueAtTime(volume * state.volume, now + attack);
+  gain.gain.linearRampToValueAtTime(0, now + duration / 1000 + release);
 
   filter.type = "lowpass";
   filter.frequency.value = 5000;
@@ -86,21 +78,10 @@ function createOscillator({
   gain.connect(ctx.destination);
 
   oscillator.start(now);
-  oscillator.stop(now + duration / 1000 + release);
+  oscillator.stop(now + duration / 1000 + release + 0.03);
 }
 
-// ============================================================
-// NOISE SYNTHESIS
-// ============================================================
-
-function createNoise({
-  duration = 120,
-  volume = 0.04,
-  highpass = 800,
-  lowpass = 5000,
-  type = "white",
-  decay = true
-} = {}) {
+function createNoise({ duration = 120, volume = 0.04, highpass = 800, lowpass = 5000, type = "white", decay = true } = {}) {
   const ctx = ensureAudioContext();
   if (!ctx) return;
 
@@ -108,21 +89,17 @@ function createNoise({
   const buffer = ctx.createBuffer(1, bufferLength, ctx.sampleRate);
   const data = buffer.getChannelData(0);
 
-  // Generate noise
   if (type === "white") {
-    for (let i = 0; i < bufferLength; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
+    for (let i = 0; i < bufferLength; i++) data[i] = Math.random() * 2 - 1;
   } else if (type === "brown") {
-    let brownian = 0;
+    let brown = 0;
     for (let i = 0; i < bufferLength; i++) {
       const white = Math.random() * 2 - 1;
-      brownian = (brownian + white * 0.04) * 0.98;
-      data[i] = brownian;
+      brown = (brown + white * 0.04) * 0.98;
+      data[i] = brown;
     }
   } else if (type === "pink") {
-    let b0, b1, b2, b3, b4, b5, b6;
-    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     for (let i = 0; i < bufferLength; i++) {
       const white = Math.random() * 2 - 1;
       b0 = 0.049922035 * white + 0.950377974 * b0;
@@ -136,12 +113,10 @@ function createNoise({
     }
   }
 
-  // Apply envelope
   if (decay) {
     for (let i = 0; i < bufferLength; i++) {
       const progress = i / bufferLength;
-      const envelope = Math.pow(1 - progress, 1.2);
-      data[i] *= envelope;
+      data[i] *= Math.pow(1 - progress, 1.2);
     }
   }
 
@@ -156,7 +131,7 @@ function createNoise({
   lpFilter.type = "lowpass";
   lpFilter.frequency.value = lowpass;
 
-  gain.gain.value = volume;
+  gain.gain.value = volume * state.volume;
 
   source.buffer = buffer;
   source.connect(hpFilter);
@@ -165,12 +140,8 @@ function createNoise({
   gain.connect(ctx.destination);
 
   source.start();
-  source.stop(ctx.currentTime + duration / 1000);
+  source.stop(ctx.currentTime + duration / 1000 + 0.02);
 }
-
-// ============================================================
-// PLAYABLE SEQUENCES
-// ============================================================
 
 function playSequence(sequence) {
   let cumulativeDelay = 0;
@@ -194,7 +165,8 @@ function playSequence(sequence) {
           volume: step.volume || 0.08,
           sweep: step.sweep || 0,
           attack: step.attack || 0.02,
-          release: step.release || 0.05
+          release: step.release || 0.05,
+          delay: step.delay || 0
         });
       }
     }, cumulativeDelay);
@@ -203,101 +175,87 @@ function playSequence(sequence) {
   });
 }
 
-// ============================================================
-// PREMIUM SOUND EFFECTS — EACH BUTTON HAS UNIQUE AUDIO
-// ============================================================
-
 function soundFor(name) {
   if (performance.now() - lastSoundTime < 50) return;
   lastSoundTime = performance.now();
-
   unlockAudio();
 
+  state.sounds += 1;
+  updateStats();
+
   switch (name) {
-    // SOUNDBOARD: Beep
     case "beep":
-      playSequence([
-        { frequency: 880, duration: 120, type: "sine", volume: 0.09, attack: 0.01, release: 0.04 }
-      ]);
+      playSequence([{ frequency: 820, duration: 120, type: "triangle", volume: 0.08 }]);
       break;
 
-    // SOUNDBOARD: Error
     case "error":
       playSequence([
-        { frequency: 420, duration: 100, type: "square", volume: 0.1, attack: 0.005, release: 0.08 },
-        { frequency: 280, duration: 120, type: "square", volume: 0.1, gap: 80, attack: 0.005, release: 0.08 }
+        { frequency: 420, duration: 100, type: "square", volume: 0.1, attack: 0.01, release: 0.08 },
+        { frequency: 280, duration: 110, type: "square", volume: 0.1, gap: 90, attack: 0.01, release: 0.08 }
       ]);
       break;
 
-    // SOUNDBOARD: Ping
     case "ping":
       playSequence([
-        { frequency: 1200, duration: 80, type: "triangle", volume: 0.08, attack: 0.01, release: 0.03 },
-        { frequency: 1500, duration: 60, type: "triangle", volume: 0.07, gap: 100, attack: 0.01, release: 0.02 }
+        { frequency: 1200, duration: 70, type: "triangle", volume: 0.08 },
+        { frequency: 1500, duration: 60, type: "triangle", volume: 0.07, gap: 100 }
       ]);
       break;
 
-    // SOUNDBOARD: Laugh
     case "laugh":
       playSequence([
-        { frequency: 540, duration: 180, type: "sine", volume: 0.07, attack: 0.02, release: 0.05 },
-        { frequency: 620, duration: 140, type: "sine", volume: 0.07, gap: 150, attack: 0.02, release: 0.04 },
-        { frequency: 700, duration: 160, type: "sine", volume: 0.07, gap: 280, attack: 0.02, release: 0.06 }
+        { frequency: 540, duration: 170, type: "sine", volume: 0.06 },
+        { frequency: 620, duration: 140, type: "sine", volume: 0.06, gap: 180 },
+        { frequency: 700, duration: 160, type: "sine", volume: 0.06, gap: 260 }
       ]);
       break;
 
-    // SOUNDBOARD: Win / Success
     case "win":
       playSequence([
-        { frequency: 523, duration: 180, type: "sine", volume: 0.09, attack: 0.01, release: 0.04 },
-        { frequency: 659, duration: 180, type: "sine", volume: 0.09, gap: 150, attack: 0.01, release: 0.04 },
-        { frequency: 784, duration: 280, type: "sine", volume: 0.1, gap: 150, attack: 0.02, release: 0.08 }
+        { frequency: 523, duration: 180, type: "sine", volume: 0.09 },
+        { frequency: 659, duration: 180, type: "sine", volume: 0.09, gap: 160 },
+        { frequency: 784, duration: 260, type: "sine", volume: 0.1, gap: 200 }
       ]);
       break;
 
-    // SOUNDBOARD: Drop
     case "drop":
       playSequence([
-        { frequency: 900, duration: 80, type: "sine", volume: 0.09, attack: 0.005, release: 0.03, sweep: -300 },
-        { frequency: 720, duration: 80, type: "sine", volume: 0.08, gap: 60, attack: 0.005, release: 0.03, sweep: -250 },
-        { frequency: 540, duration: 80, type: "sine", volume: 0.08, gap: 60, attack: 0.005, release: 0.03, sweep: -200 },
-        { frequency: 360, duration: 120, type: "sine", volume: 0.07, gap: 60, attack: 0.01, release: 0.04, sweep: -150 }
+        { frequency: 900, duration: 80, type: "sine", volume: 0.09, sweep: -300 },
+        { frequency: 720, duration: 80, type: "sine", volume: 0.08, gap: 60, sweep: -220 },
+        { frequency: 540, duration: 80, type: "sine", volume: 0.08, gap: 60, sweep: -180 },
+        { frequency: 360, duration: 120, type: "sine", volume: 0.07, gap: 90, sweep: -140 }
       ]);
       break;
 
-    // ACTION CARD: Notification (unique sound)
     case "notification":
       playSequence([
-        { noise: true, noiseType: "white", duration: 40, volume: 0.03, highpass: 4000, lowpass: 6000, decay: false },
-        { frequency: 1100, duration: 70, type: "triangle", volume: 0.08, gap: 50, attack: 0.01, release: 0.03 },
-        { frequency: 1300, duration: 60, type: "triangle", volume: 0.07, gap: 80, attack: 0.01, release: 0.02 }
+        { noise: true, noiseType: "white", duration: 50, volume: 0.03, highpass: 3500, lowpass: 6000, decay: false },
+        { frequency: 1100, duration: 70, type: "triangle", volume: 0.08, gap: 50 },
+        { frequency: 1300, duration: 60, type: "triangle", volume: 0.07, gap: 80 }
       ]);
       break;
 
-    // ACTION CARD: Crash (FAKE SYSTEM CRASH SOUND)
     case "crash":
       playSequence([
         { noise: true, noiseType: "brown", duration: 150, volume: 0.08, highpass: 300, lowpass: 8000, decay: true },
-        { frequency: 200, duration: 100, type: "square", volume: 0.08, gap: 80, attack: 0.01, release: 0.05, sweep: -100 },
+        { frequency: 200, duration: 100, type: "square", volume: 0.08, gap: 80, sweep: -100 },
         { noise: true, noiseType: "pink", duration: 120, volume: 0.06, highpass: 500, lowpass: 7000, gap: 120, decay: true },
-        { frequency: 150, duration: 80, type: "square", volume: 0.07, gap: 100, attack: 0.01, release: 0.04 }
+        { frequency: 150, duration: 80, type: "square", volume: 0.07, gap: 100 }
       ]);
       break;
 
-    // ACTION CARD: Joke (playful laugh sequence)
     case "joke":
       playSequence([
-        { frequency: 520, duration: 150, type: "sine", volume: 0.06, attack: 0.03, release: 0.04 },
-        { frequency: 600, duration: 130, type: "sine", volume: 0.07, gap: 160, attack: 0.03, release: 0.03 },
-        { frequency: 680, duration: 140, type: "sine", volume: 0.06, gap: 200, attack: 0.03, release: 0.05 }
+        { frequency: 520, duration: 150, type: "sine", volume: 0.06 },
+        { frequency: 600, duration: 130, type: "sine", volume: 0.07, gap: 160 },
+        { frequency: 680, duration: 140, type: "sine", volume: 0.06, gap: 200 }
       ]);
       break;
 
-    // ACTION CARD: Sound (system notification tone)
     case "sound":
       playSequence([
-        { frequency: 950, duration: 90, type: "sine", volume: 0.09, attack: 0.01, release: 0.03 },
-        { frequency: 1200, duration: 70, type: "sine", volume: 0.08, gap: 110, attack: 0.01, release: 0.02 }
+        { frequency: 950, duration: 90, type: "sine", volume: 0.09 },
+        { frequency: 1200, duration: 70, type: "sine", volume: 0.08, gap: 110 }
       ]);
       break;
 
@@ -306,32 +264,24 @@ function soundFor(name) {
   }
 }
 
-// ============================================================
-// UI HELPERS
-// ============================================================
-
 function showToast(message, duration = 1800) {
   const toast = document.getElementById("toast");
   if (!toast) return;
-
   toast.textContent = message;
   toast.classList.add("show");
-
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => {
-    toast.classList.remove("show");
-  }, duration);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"), duration);
 }
 
-function showOverlay() {
-  const overlay = document.getElementById("overlay");
+function showOverlay(id = "overlay") {
+  const overlay = document.getElementById(id);
   if (!overlay) return;
   overlay.style.display = "flex";
   overlay.setAttribute("aria-hidden", "false");
 }
 
-function hideOverlay() {
-  const overlay = document.getElementById("overlay");
+function hideOverlay(id = "overlay") {
+  const overlay = document.getElementById(id);
   if (!overlay) return;
   overlay.style.display = "none";
   overlay.setAttribute("aria-hidden", "true");
@@ -340,64 +290,47 @@ function hideOverlay() {
 function showFakeScreen() {
   const screen = document.getElementById("fake-screen");
   if (!screen) return;
-
   screen.style.display = "flex";
   screen.setAttribute("aria-hidden", "false");
-
-  // Play crash noise during screen display
-  createNoise({
-    duration: 200,
-    volume: 0.03,
-    highpass: 2000,
-    lowpass: 8000,
-    type: "brown",
-    decay: false
-  });
-
+  createNoise({ duration: 200, volume: 0.03, highpass: 2000, lowpass: 8000, type: "brown", decay: false });
   setTimeout(() => {
     screen.style.display = "none";
     screen.setAttribute("aria-hidden", "true");
   }, 3000);
 }
 
-function addAlertItem(label = "Fausse alerte") {
+function addAlertItem(label = "Fausse alerte", detail = "Système de sécurité") {
   const list = document.getElementById("notification-list");
   if (!list) return;
 
   const item = document.createElement("div");
-  item.className = "alert-item";
+  item.className = "notification-item";
   item.innerHTML = `
-    <div class="alert-row">
-      <div>
-        <strong>${label}</strong>
-        <small>${new Date().toLocaleTimeString("fr-FR")}</small>
-      </div>
-      <button type="button" class="alert-close" aria-label="Supprimer">✕</button>
+    <span class="notification-dot"></span>
+    <div class="notification-text">
+      <strong>${label}</strong>
+      <span>${detail} · ${new Date().toLocaleTimeString("fr-FR")}</span>
     </div>
   `;
 
-  item.querySelector(".alert-close").addEventListener("click", () => {
-    item.remove();
-    soundFor("beep");
-  });
-
   list.prepend(item);
+  state.alerts += 1;
+  updateStats();
   showToast("📢 Alerte ajoutée");
 }
 
 function randomJoke() {
-  const jokes = [
-    "Pourquoi les plongeurs plongent-ils toujours en arrière ? Parce que sinon ils tombent dans le bateau !",
-    "Qu'est-ce qu'un hamster dans un jardin ? Un petit jardinier !",
-    "Quel animal est le meilleur en informatique ? Le raton-laveur, il sait gérer les fichiers !",
-    "Pourquoi les développeurs aiment-ils le café ? Parce qu'il aide à compiler les idées !",
-    "Quel est le comble pour un électricien ? De ne pas être au courant !",
-    "Comment appelle-t-on un canif ? Un petit fien !",
-    "Qu'est-ce qu'un crocodile qui surveille la pharmacie ? Un Lacoste-guard !"
-  ];
-
-  const joke = jokes[Math.floor(Math.random() * jokes.length)];
-  alert("😂 Blague du jour\n\n" + joke);
+  const joke = state.jokePool[Math.floor(Math.random() * state.jokePool.length)];
+  const jokeModal = document.getElementById("joke-modal");
+  const jokeContent = document.getElementById("joke-content");
+  if (jokeModal && jokeContent) {
+    jokeContent.textContent = joke;
+    showOverlay("joke-modal");
+  } else {
+    alert("😂 " + joke);
+  }
+  state.laughs += 1;
+  updateStats();
   showToast("😂 Blague affichée");
 }
 
@@ -408,23 +341,62 @@ function updateScore(delta = 0) {
   const current = Number(scoreEl.textContent || 0);
   const newScore = Math.max(0, current + delta);
   scoreEl.textContent = newScore;
+  state.actions += delta > 0 ? 1 : 0;
+  updateStats();
 
   if (delta > 0) {
     scoreEl.parentElement.classList.add("score-pop");
-    setTimeout(() => scoreEl.parentElement.classList.remove("score-pop"), 400);
+    setTimeout(() => scoreEl.parentElement.classList.remove("score-pop"), 420);
   }
 }
 
-// ============================================================
-// ACTION HANDLERS
-// ============================================================
+function updateStats() {
+  const actionEl = document.getElementById("stat-actions");
+  const soundEl = document.getElementById("stat-sounds");
+  const laughEl = document.getElementById("stat-laughs");
+  const timeEl = document.getElementById("stat-time");
+
+  const detailedActions = document.getElementById("detailed-actions");
+  const detailedSounds = document.getElementById("detailed-sounds");
+  const detailedAlerts = document.getElementById("detailed-alerts");
+  const detailedTime = document.getElementById("detailed-time");
+
+  if (actionEl) actionEl.textContent = String(state.actions);
+  if (soundEl) soundEl.textContent = String(state.sounds);
+  if (laughEl) laughEl.textContent = String(state.laughs);
+
+  const elapsed = Math.floor((Date.now() - state.sessionStart) / 1000);
+  if (timeEl) timeEl.textContent = `${elapsed}s`;
+
+  if (detailedActions) detailedActions.textContent = String(state.actions);
+  if (detailedSounds) detailedSounds.textContent = String(state.sounds);
+  if (detailedAlerts) detailedAlerts.textContent = String(state.alerts);
+  if (detailedTime) detailedTime.textContent = `${elapsed}s`;
+
+  const funEl = document.getElementById("detailed-fun");
+  if (funEl) {
+    funEl.textContent = state.laughs > 5 ? "🔥" : state.laughs > 2 ? "😄" : "🙂";
+  }
+}
+
+function resetStats() {
+  state.actions = 0;
+  state.sounds = 0;
+  state.laughs = 0;
+  state.alerts = 0;
+  state.sessionStart = Date.now();
+  document.getElementById("score").textContent = "12";
+  updateStats();
+  showToast("📊 Statistiques réinitialisées");
+}
 
 function handleAction(action) {
   unlockAudio();
+  state.actions += 1;
 
   switch (action) {
     case "notification":
-      addAlertItem("Notification système");
+      addAlertItem("Notification système", "Fichier de sécurité détecté");
       soundFor("notification");
       updateScore(5);
       break;
@@ -447,79 +419,187 @@ function handleAction(action) {
       updateScore(2);
       break;
   }
+
+  updateStats();
 }
 
-// ============================================================
-// EVENT BINDING
-// ============================================================
-
-document.querySelectorAll(".sound-btn").forEach((button) => {
-  button.addEventListener("click", () => {
-    unlockAudio();
-    const toneName = button.dataset.tone;
-    soundFor(toneName);
-    showToast(`🔊 ${button.textContent}`);
-    updateScore(1);
-
-    // Visual feedback
-    button.classList.add("active");
-    setTimeout(() => button.classList.remove("active"), 150);
+function bindEvents() {
+  document.querySelectorAll(".sound-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      unlockAudio();
+      const toneName = button.dataset.tone;
+      soundFor(toneName);
+      showToast(`🔊 ${button.textContent}`);
+      updateScore(1);
+      button.classList.add("active");
+      setTimeout(() => button.classList.remove("active"), 150);
+    });
   });
-});
 
-document.querySelectorAll(".action-card").forEach((button) => {
-  button.addEventListener("click", () => {
-    handleAction(button.dataset.action);
-
-    // Visual feedback
-    button.classList.add("active");
-    setTimeout(() => button.classList.remove("active"), 200);
+  document.querySelectorAll(".action-card").forEach((button) => {
+    button.addEventListener("click", () => {
+      handleAction(button.dataset.action);
+      button.classList.add("active");
+      setTimeout(() => button.classList.remove("active"), 220);
+    });
   });
-});
 
-document.querySelectorAll(".tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((node) => node.classList.remove("active"));
-    tab.classList.add("active");
-    unlockAudio();
-    soundFor("beep");
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach((node) => node.classList.remove("active"));
+      tab.classList.add("active");
+      unlockAudio();
+      soundFor("beep");
+    });
   });
-});
 
-const addAlertButton = document.getElementById("add-alert");
-if (addAlertButton) {
-  addAlertButton.addEventListener("click", () => {
-    addAlertItem("Alerte manuelle");
-    soundFor("notification");
-    updateScore(4);
+  const addAlertButton = document.getElementById("add-alert");
+  if (addAlertButton) {
+    addAlertButton.addEventListener("click", () => {
+      addAlertItem("Alerte manuelle", "Commande de test envoyée");
+      soundFor("notification");
+      updateScore(4);
+    });
+  }
+
+  const randomJokeButton = document.getElementById("random-joke");
+  if (randomJokeButton) {
+    randomJokeButton.addEventListener("click", randomJoke);
+  }
+
+  const closeJokeButton = document.getElementById("close-joke");
+  if (closeJokeButton) {
+    closeJokeButton.addEventListener("click", () => hideOverlay("joke-modal"));
+  }
+
+  const anotherJokeButton = document.getElementById("another-joke");
+  if (anotherJokeButton) {
+    anotherJokeButton.addEventListener("click", randomJoke);
+  }
+
+  document.querySelectorAll(".joke-copy-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const text = button.parentElement.querySelector(".joke-text").textContent;
+      navigator.clipboard?.writeText(text).catch(() => {});
+      showToast("📋 Blague copiée");
+      soundFor("beep");
+    });
   });
+
+  const loadMoreButton = document.getElementById("load-more-jokes");
+  if (loadMoreButton) {
+    loadMoreButton.addEventListener("click", () => {
+      const jokesContainer = document.getElementById("jokes-container");
+      if (!jokesContainer) return;
+      const more = [
+        "Quel est le repas préféré d'un programmeur ? Des bugs au chocolat.",
+        "Pourquoi les tests logiciels sont si prudents ? Parce qu'ils ne veulent pas réveiller les bugs.",
+        "Pourquoi les développeurs aiment-ils les nuits noires ? Parce qu'ils aiment voir les erreurs clignoter.",
+        "Pourquoi un bon développeur porte-t-il toujours une pomme ? Pour réparer les bugs du cœur."
+      ];
+      more.forEach((text) => {
+        const item = document.createElement("div");
+        item.className = "joke-item";
+        item.innerHTML = `
+          <p class="joke-text">${text}</p>
+          <button class="joke-copy-btn">📋 Copier</button>
+        `;
+        item.querySelector(".joke-copy-btn").addEventListener("click", () => {
+          navigator.clipboard?.writeText(text).catch(() => {});
+          showToast("📋 Blague copiée");
+          soundFor("beep");
+        });
+        jokesContainer.appendChild(item);
+      });
+      loadMoreButton.textContent = "Plus de blagues !";
+      soundFor("laugh");
+    });
+  }
+
+  document.querySelectorAll(".quick-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const preset = button.dataset.preset;
+      const messages = {
+        security: ["Alerte de sécurité", "Vérification du pare-feu active"],
+        battery: ["Batterie faible", "Recharge du module système nécessaire"],
+        network: ["Réseau modifié", "Connexion sécurisée détectée"],
+        update: ["Mise à jour disponible", "Module anti-prank en cours de synchronisation"]
+      };
+      const [title, detail] = messages[preset] || messages.security;
+      addAlertItem(title, detail);
+      soundFor("notification");
+    });
+  });
+
+  document.querySelectorAll(".preset-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const preset = button.dataset.preset;
+      const sounds = {
+        "alert-sequence": ["notification", "error"],
+        "success-sequence": ["win", "beep"],
+        "error-sequence": ["crash", "error"],
+        "notification-sequence": ["ping", "notification"]
+      };
+      const sequence = sounds[preset] || ["beep"];
+      sequence.forEach((tone, index) => setTimeout(() => soundFor(tone), index * 160));
+      showToast("🎵 Séquence lancée");
+    });
+  });
+
+  const volumeButton = document.getElementById("volume-control");
+  if (volumeButton) {
+    volumeButton.addEventListener("click", () => {
+      state.volume = state.volume === 1 ? 0.2 : 1;
+      volumeButton.textContent = state.volume === 1 ? "🔊 Vol" : "🔇 Vol";
+      soundFor("beep");
+      showToast(state.volume === 1 ? "Volume activé" : "Volume réduit");
+    });
+  }
+
+  const statsButton = document.getElementById("score");
+  if (statsButton) {
+    statsButton.addEventListener("click", () => showOverlay("stats-modal"));
+  }
+
+  const closeStatsButton = document.getElementById("close-stats");
+  if (closeStatsButton) {
+    closeStatsButton.addEventListener("click", () => hideOverlay("stats-modal"));
+  }
+
+  const resetStatsButton = document.getElementById("reset-stats");
+  if (resetStatsButton) {
+    resetStatsButton.addEventListener("click", resetStats);
+  }
+
+  const closeOverlayButton = document.getElementById("close-overlay");
+  if (closeOverlayButton) {
+    closeOverlayButton.addEventListener("click", () => hideOverlay("overlay"));
+  }
+
+  const confirmOverlayButton = document.getElementById("confirm-overlay");
+  if (confirmOverlayButton) {
+    confirmOverlayButton.addEventListener("click", () => {
+      hideOverlay("overlay");
+      soundFor("win");
+      showToast("✅ Confirmé");
+      updateScore(10);
+    });
+  }
 }
 
-const closeOverlayButton = document.getElementById("close-overlay");
-if (closeOverlayButton) {
-  closeOverlayButton.addEventListener("click", () => {
-    hideOverlay();
-    soundFor("beep");
-  });
+function startTimer() {
+  setInterval(() => {
+    updateStats();
+  }, 1000);
 }
-
-const confirmOverlayButton = document.getElementById("confirm-overlay");
-if (confirmOverlayButton) {
-  confirmOverlayButton.addEventListener("click", () => {
-    hideOverlay();
-    soundFor("win");
-    showToast("✅ Confirmé");
-    updateScore(10);
-  });
-}
-
-// ============================================================
-// INITIALIZATION
-// ============================================================
 
 window.addEventListener("DOMContentLoaded", () => {
-  const overlay = document.getElementById("overlay");
-  if (overlay) hideOverlay();
+  bindEvents();
+  startTimer();
+  updateStats();
+  hideOverlay("overlay");
+  hideOverlay("joke-modal");
+  hideOverlay("stats-modal");
 
   const fakeScreen = document.getElementById("fake-screen");
   if (fakeScreen) {
@@ -529,9 +609,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const toast = document.getElementById("toast");
   if (toast) toast.classList.remove("show");
-
-  console.log("🎵 Prank Safe — Ultra Premium Edition loaded!");
+  document.body.classList.add("ready");
 });
 
-// User interaction to unlock audio context
 document.addEventListener("click", unlockAudio, { once: true });
